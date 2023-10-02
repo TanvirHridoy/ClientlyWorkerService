@@ -1,0 +1,1 @@
+﻿Scaffold-DbContext "Data Source=HRIDOYPC\SQL2K19EXP;Initial Catalog=ClientyDb;User Id=sa;Password=1234;Connect Timeout=0;TrustServerCertificate=True;" Microsoft.EntityFrameworkCore.SqlServer -OutputDir Data -Force
