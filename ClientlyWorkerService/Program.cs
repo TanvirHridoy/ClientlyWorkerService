@@ -163,7 +163,7 @@ async Task ProcessVatLabourMonthly()
         Console.WriteLine("");
     }
 
-   // await _context.PrimeTaskBooks.AddRangeAsync(newTasks);
-   // await _context.SaveChangesAsync();
+    await _context.PrimeTaskBooks.AddRangeAsync(newTasks);
+    await _context.SaveChangesAsync();
 
 }
