@@ -27,4 +27,6 @@ namespace ClientlyWorkerService.ViewModel
 
         public string? InstanceId { get; set; }
     }
+
+    
 }

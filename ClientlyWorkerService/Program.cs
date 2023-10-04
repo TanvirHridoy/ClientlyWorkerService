@@ -11,6 +11,21 @@ IConfiguration _config;
 Console.WriteLine("Hello, World!");
 ClientyDbContext _context = new ClientyDbContext();
 
+string[] months = new string[]
+{
+    "Jan",
+    "Feb",
+    "Mar",
+    "Apr",
+    "May",
+    "Jun",
+    "Jul",
+    "Aug",
+    "Sep",
+    "Oct",
+    "Nov",
+    "Dec"
+};
 var builder = new ConfigurationBuilder()
     .SetBasePath(Directory.GetCurrentDirectory())
     .AddJsonFile("appsettings.json", optional: false);
@@ -36,6 +51,11 @@ Console.WriteLine("Salary Monthly Processing Ends");
 Console.WriteLine("Salary 14 Days Processing Starts");
 await ProcessSalary14Days();
 Console.WriteLine("Salary 14 Days Processing Ends");
+
+
+Console.WriteLine("Tax Statement Processing Starts");
+await ProcessTaxStatementTask();
+Console.WriteLine("Tax Statement Processing Ends");
 
 
 Console.ReadLine();
@@ -354,6 +374,72 @@ async Task ProcessSalary14Days()
 
         throw;
     }
+
+
+}
+
+
+async Task ProcessTaxStatementTask()
+{
+    if (Today.Month == 1 && Today.Day==1)
+    {
+        try
+        {
+            var prevMonth = Today.Month == 1 ? 12 : Today.Month - 1;
+            var year = Today.Year;
+            var PrevtaskYear =  Today.Year - 1 ;
+            List<PrimeTaskBook> newTasks = new List<PrimeTaskBook>();
+            var tasks = await _context.PrimeTaskBooks.Include(e => e.Client).Where(e => e.TaskType == "Tax Statement"
+            && e.CreateDate.Year == PrevtaskYear ).AsNoTracking().ToListAsync();
+            foreach (var item in tasks)
+            {
+                var financialyear= item.Client.FinancialYear.Split("-").FirstOrDefault()?.Trim();
+                var DDs = financialyear?.Split(".");
+                var month = Convert.ToInt32(DDs[1]);
+                var day = Convert.ToInt32(DDs[0]);
+                var creationDate = new DateTime(Today.Year, month, day);
+                var Deadline = creationDate.AddMonths(6).AddDays(2);
+
+
+
+                 Deadline = Deadline.DayOfWeek == DayOfWeek.Saturday ? Deadline.AddDays(2) : Deadline.DayOfWeek == DayOfWeek.Sunday ? Deadline.AddDays(1) : Deadline;
+
+                //Labor - 2023 (Monthly Sep)
+                var task = new PrimeTaskBook()
+                {
+                    TaskType = item.TaskType,
+                    Assignee = item.Assignee,
+                    AtchTitle = item.AtchTitle,
+                    ClientId = item.ClientId,
+                    CreateDate = creationDate,
+                    Deadline = Deadline,
+                    InstanceId = item.InstanceId,
+                    FileUrl = item.FileUrl,
+                    IsPrimeTask = item.IsPrimeTask,
+                    Notes = item.Notes,
+                    TaskName = item.TaskName.Replace(PrevtaskYear.ToString(),Today.Year.ToString()),
+                    TaskStatus = "To Do",
+                };
+
+                newTasks.Add(task);
+
+                Console.WriteLine($"Previous Task: Client : {item.Client.ClientName} TaskName : {item.TaskName} CreationDate: {item.CreateDate.ToShortDateString()} Deadline= {item.Deadline?.ToShortDateString()}");
+
+                Console.WriteLine($"New      Task: Client : {item.Client.ClientName} TaskName : {task.TaskName} CreationDate: {task.CreateDate.ToShortDateString()} Deadline= {task.Deadline?.ToShortDateString()}");
+                Console.WriteLine("");
+            }
+
+            await _context.PrimeTaskBooks.AddRangeAsync(newTasks);
+            await _context.SaveChangesAsync();
+        }
+        catch (Exception ex)
+        {
+
+            throw;
+        }
+    }
+    //Today;
+  
 
 
 }
