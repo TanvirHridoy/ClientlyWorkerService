@@ -36,10 +36,12 @@ async Task ProcessVatMonthly()
 {
      //Today;
 
-    var prevMonth = Today.Month - 1;
-    var year = Today.Year;
+    var prevMonth = Today.Month == 1 ? 12:Today.Month - 1;
+    var year =   Today.Year;
+    var PrevtaskYear = Today.Month == 1 ? Today.Year - 1 : Today.Year;
     List<PrimeTaskBook> newTasks = new List<PrimeTaskBook>();
-    var tasks = await _context.PrimeTaskBooks.Include(e => e.Client).Where(e => e.TaskType == "VAT - Monthly" && e.CreateDate.Month == prevMonth && e.CreateDate.Year == year && e.CreateDate.Day<26).AsNoTracking().ToListAsync();
+    var tasks = await _context.PrimeTaskBooks.Include(e => e.Client).Where(e => e.TaskType == "VAT - Monthly" 
+    && e.CreateDate.Month == prevMonth && e.CreateDate.Year == PrevtaskYear && e.CreateDate.Day<30).AsNoTracking().ToListAsync();
     foreach (var item in tasks)
     {
         var nCreationdate = Today;
@@ -105,10 +107,13 @@ async Task ProcessVatLabourMonthly()
     //Today;
     try
     {
-        var prevMonth = Today.Month - 1;
+        var prevMonth = Today.Month == 1 ? 12 : Today.Month - 1;
         var year = Today.Year;
+
+        var PrevtaskYear = Today.Month == 1 ? Today.Year - 1 : Today.Year;
         List<PrimeTaskBook> newTasks = new List<PrimeTaskBook>();
-        var tasks = await _context.PrimeTaskBooks.Include(e=>e.Client).Where(e => e.TaskType == "Labor - Monthly" && e.CreateDate.Month == prevMonth && e.CreateDate.Year == year && e.CreateDate.Day < 26).AsNoTracking().ToListAsync();
+        var tasks = await _context.PrimeTaskBooks.Include(e=>e.Client).Where(e => e.TaskType == "Labor - Monthly" 
+        && e.CreateDate.Month == prevMonth && e.CreateDate.Year == PrevtaskYear && e.CreateDate.Day < 30).AsNoTracking().ToListAsync();
         foreach (var item in tasks)
         {
             var nCreationdate = Today;
@@ -117,15 +122,15 @@ async Task ProcessVatLabourMonthly()
             ).Select(e => new LabourVatMonthlyVM()
             {
                 CreateDate = e.CreateDate,
-                DCreateDate = e.FromDate == "01-Dec" ? DateTime.ParseExact(e.CreateDate + "-" + (year + 1).ToString(), "dd-MMM-yyyy", CultureInfo.InvariantCulture) : DateTime.ParseExact(e.CreateDate + "-" + (year).ToString(), "dd-MMM-yyyy", CultureInfo.InvariantCulture),
+                DCreateDate = e.FromDate == "16-Dec" ? DateTime.ParseExact(e.CreateDate + "-" + (PrevtaskYear + 1).ToString(), "dd-MMM-yyyy", CultureInfo.InvariantCulture) : DateTime.ParseExact(e.CreateDate + "-" + (PrevtaskYear).ToString(), "dd-MMM-yyyy", CultureInfo.InvariantCulture),
 
-                DDeadline = e.FromDate == "01-Dec" ? DateTime.ParseExact(e.Deadline + "-" + (year + 1).ToString(), "dd-MMM-yyyy", CultureInfo.InvariantCulture) : DateTime.ParseExact(e.Deadline + "-" + year.ToString(), "dd-MMM-yyyy", CultureInfo.InvariantCulture),
+                DDeadline = e.FromDate == "16-Dec" ? DateTime.ParseExact(e.Deadline + "-" + (PrevtaskYear + 1).ToString(), "dd-MMM-yyyy", CultureInfo.InvariantCulture) : DateTime.ParseExact(e.Deadline + "-" + PrevtaskYear.ToString(), "dd-MMM-yyyy", CultureInfo.InvariantCulture),
                 Deadline = e.Deadline,
 
-                DFromDate = DateTime.ParseExact(e.FromDate + "-" + year.ToString(), "dd-MMM-yyyy", CultureInfo.InvariantCulture),
+                DFromDate = DateTime.ParseExact(e.FromDate + "-" + PrevtaskYear.ToString(), "dd-MMM-yyyy", CultureInfo.InvariantCulture),
                 FromDate = e.FromDate,
 
-                DTillDate = e.FromDate == "01-Dec" ? DateTime.ParseExact(e.TillDate + "-" + (year + 1).ToString(), "dd-MMM-yyyy", CultureInfo.InvariantCulture) : DateTime.ParseExact(e.TillDate + "-" + year.ToString(), "dd-MMM-yyyy", CultureInfo.InvariantCulture),
+                DTillDate = e.FromDate == "16-Dec" ? DateTime.ParseExact(e.TillDate + "-" + (PrevtaskYear + 1).ToString(), "dd-MMM-yyyy", CultureInfo.InvariantCulture) : DateTime.ParseExact(e.TillDate + "-" + PrevtaskYear.ToString(), "dd-MMM-yyyy", CultureInfo.InvariantCulture),
 
                 Id = e.Id,
                 TillDate = e.TillDate,
