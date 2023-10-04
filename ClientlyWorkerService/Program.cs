@@ -20,7 +20,8 @@ var x = _config.GetConnectionString("ClientlyDB");
 Console.WriteLine("Please Enter ProcessDate: dd-MMM-yyyyy");
 var dateInput = Console.ReadLine();
 var Today = Convert.ToDateTime(dateInput);
-await ProcessVatMonthly();
+//await ProcessVatMonthly();
+await ProcessVatLabourMonthly();
 
 Console.ReadLine();
 
@@ -88,5 +89,81 @@ async Task ProcessVatMonthly()
 
     await _context.PrimeTaskBooks.AddRangeAsync(newTasks);
     await _context.SaveChangesAsync();
+
+}
+
+
+async Task ProcessVatLabourMonthly()
+{
+    //Today;
+
+    var prevMonth = Today.Month - 1;
+    var year = Today.Year;
+    List<PrimeTaskBook> newTasks = new List<PrimeTaskBook>();
+    var tasks = await _context.PrimeTaskBooks.Where(e => e.TaskType == "Labor - Monthly" && e.CreateDate.Month == prevMonth && e.CreateDate.Year == year && e.CreateDate.Day < 26).AsNoTracking().ToListAsync();
+    foreach (var item in tasks)
+    {
+        var nCreationdate = Today;
+        var LaborVatMonthly = await _context.LaborVatMonthlies.Where(e => e.TaskType == "Labor - Monthly" &&
+        e.InstanceId == item.InstanceId
+        ).Select(e => new LabourVatMonthlyVM()
+        {
+            CreateDate = e.CreateDate,
+            DCreateDate = e.FromDate=="01-Dec"?  DateTime.ParseExact(e.CreateDate + "-" + (year+1).ToString(), "dd-MMM-yyyy", CultureInfo.InvariantCulture) : DateTime.ParseExact(e.CreateDate + "-" + (year).ToString(), "dd-MMM-yyyy", CultureInfo.InvariantCulture),
+
+            DDeadline = e.FromDate == "01-Dec" ? DateTime.ParseExact(e.Deadline + "-" + (year+1).ToString(), "dd-MMM-yyyy", CultureInfo.InvariantCulture): DateTime.ParseExact(e.Deadline + "-" + year.ToString(), "dd-MMM-yyyy", CultureInfo.InvariantCulture),
+            Deadline = e.Deadline,
+
+            DFromDate = DateTime.ParseExact(e.FromDate + "-" + year.ToString(), "dd-MMM-yyyy", CultureInfo.InvariantCulture),
+            FromDate = e.FromDate,
+
+            DTillDate = e.FromDate == "01-Dec" ?  DateTime.ParseExact(e.TillDate + "-" + (year+1).ToString(), "dd-MMM-yyyy", CultureInfo.InvariantCulture): DateTime.ParseExact(e.TillDate + "-" + year.ToString(), "dd-MMM-yyyy", CultureInfo.InvariantCulture),
+
+            Id = e.Id,
+            TillDate = e.TillDate,
+            InstanceId = e.InstanceId,
+            TaskType = e.TaskType
+
+        }).ToListAsync();
+
+        //Where
+
+        //@EntryDate >= FromDate and @EntryDate<= TillDate
+        var LabourVat = LaborVatMonthly
+        .Where(e =>
+         Today.Date >= e.DFromDate.Date &&
+         Today.Date <= e.DTillDate.Date
+        )
+        .FirstOrDefault();
+
+        LabourVat.DDeadline = LabourVat.DDeadline.DayOfWeek == DayOfWeek.Saturday ? LabourVat.DDeadline.AddDays(2) : LabourVat.DDeadline.DayOfWeek == DayOfWeek.Sunday ? LabourVat.DDeadline.AddDays(1) : LabourVat.DDeadline;
+
+        //Labor - 2023 (Monthly Sep)
+        var task = new PrimeTaskBook()
+        {
+            TaskType = item.TaskType,
+            Assignee = item.Assignee,
+            AtchTitle = item.AtchTitle,
+            ClientId = item.ClientId,
+            CreateDate = Today.Date,
+            Deadline = LabourVat.DDeadline,
+            InstanceId = item.InstanceId,
+            FileUrl = item.FileUrl,
+            IsPrimeTask = item.IsPrimeTask,
+            Notes = item.Notes,
+            TaskName = $"Labor - {Today.Year} (Monthly {LabourVat.DFromDate.ToString("MMM")})",
+            TaskStatus = "To Do",
+        };
+
+        newTasks.Add(task);
+
+        Console.WriteLine($"Previous Task: TaskName : {item.TaskName} CreationDate: {item.CreateDate.ToShortDateString()} Deadline= {item.Deadline?.ToShortDateString()}");
+
+        Console.WriteLine($"New      Task: TaskName : {task.TaskName} CreationDate: {task.CreateDate.ToShortDateString()} Deadline= {task.Deadline?.ToShortDateString()}");
+        Console.WriteLine("");
+    }
+
+   // await _context.PrimeTaskBooks.AddRangeAsync(newTasks);
+   // await _context.SaveChangesAsync();
 
 }
