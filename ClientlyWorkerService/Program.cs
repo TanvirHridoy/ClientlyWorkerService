@@ -39,7 +39,7 @@ async Task ProcessVatMonthly()
     var prevMonth = Today.Month - 1;
     var year = Today.Year;
     List<PrimeTaskBook> newTasks = new List<PrimeTaskBook>();
-    var tasks = await _context.PrimeTaskBooks.Where(e => e.TaskType == "VAT - Monthly" && e.CreateDate.Month == prevMonth && e.CreateDate.Year == year && e.CreateDate.Day<26).AsNoTracking().ToListAsync();
+    var tasks = await _context.PrimeTaskBooks.Include(e => e.Client).Where(e => e.TaskType == "VAT - Monthly" && e.CreateDate.Month == prevMonth && e.CreateDate.Year == year && e.CreateDate.Day<26).AsNoTracking().ToListAsync();
     foreach (var item in tasks)
     {
         var nCreationdate = Today;
@@ -88,9 +88,9 @@ async Task ProcessVatMonthly()
 
         newTasks.Add(task);
 
-        Console.WriteLine($"Previous Task: TaskName : {item.TaskName} CreationDate: {item.CreateDate.ToShortDateString()} Deadline= {item.Deadline?.ToShortDateString()}");
+        Console.WriteLine($"Previous Task: Client : {item.Client.ClientName} TaskName : {item.TaskName} CreationDate: {item.CreateDate.ToShortDateString()} Deadline= {item.Deadline?.ToShortDateString()}");
 
-        Console.WriteLine($"New      Task: TaskName : {task.TaskName} CreationDate: {task.CreateDate.ToShortDateString()} Deadline= {task.Deadline?.ToShortDateString()}");
+        Console.WriteLine($"New      Task: Client : {item.Client.ClientName} TaskName : {task.TaskName} CreationDate: {task.CreateDate.ToShortDateString()} Deadline= {task.Deadline?.ToShortDateString()}");
         Console.WriteLine("");
     }
 
@@ -108,7 +108,7 @@ async Task ProcessVatLabourMonthly()
         var prevMonth = Today.Month - 1;
         var year = Today.Year;
         List<PrimeTaskBook> newTasks = new List<PrimeTaskBook>();
-        var tasks = await _context.PrimeTaskBooks.Where(e => e.TaskType == "Labor - Monthly" && e.CreateDate.Month == prevMonth && e.CreateDate.Year == year && e.CreateDate.Day < 26).AsNoTracking().ToListAsync();
+        var tasks = await _context.PrimeTaskBooks.Include(e=>e.Client).Where(e => e.TaskType == "Labor - Monthly" && e.CreateDate.Month == prevMonth && e.CreateDate.Year == year && e.CreateDate.Day < 26).AsNoTracking().ToListAsync();
         foreach (var item in tasks)
         {
             var nCreationdate = Today;
@@ -165,9 +165,9 @@ async Task ProcessVatLabourMonthly()
 
             newTasks.Add(task);
 
-            Console.WriteLine($"Previous Task: TaskName : {item.TaskName} CreationDate: {item.CreateDate.ToShortDateString()} Deadline= {item.Deadline?.ToShortDateString()}");
+            Console.WriteLine($"Previous Task: Client : {item.Client.ClientName} TaskName : {item.TaskName} CreationDate: {item.CreateDate.ToShortDateString()} Deadline= {item.Deadline?.ToShortDateString()}");
 
-            Console.WriteLine($"New      Task: TaskName : {task.TaskName} CreationDate: {task.CreateDate.ToShortDateString()} Deadline= {task.Deadline?.ToShortDateString()}");
+            Console.WriteLine($"New      Task: Client : {item.Client.ClientName} TaskName : {task.TaskName} CreationDate: {task.CreateDate.ToShortDateString()} Deadline= {task.Deadline?.ToShortDateString()}");
             Console.WriteLine("");
         }
 

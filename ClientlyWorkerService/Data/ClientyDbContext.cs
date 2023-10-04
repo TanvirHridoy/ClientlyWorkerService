@@ -70,7 +70,9 @@ public partial class ClientyDbContext : DbContext
     public virtual DbSet<VatLaborOption> VatLaborOptions { get; set; }
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-        => optionsBuilder.UseSqlServer("Data Source=LENOVO-PC\\SQLEXPRESS;Initial Catalog=ClientlyDb;User Id=sa;Password=1234;Connect Timeout=3600;MultipleActiveResultSets=True;TrustServerCertificate=True;");
+        => optionsBuilder
+        //.UseSqlServer("Data Source=LENOVO-PC\\SQLEXPRESS;Initial Catalog=ClientlyDb;User Id=sa;Password=1234;Connect Timeout=3600;MultipleActiveResultSets=True;TrustServerCertificate=True;");
+        .UseSqlServer("Data Source=HRIDOYPC\\SQL2K19EXP;Initial Catalog=ClientyDb;User Id=sa;Password=1234;Connect Timeout=0;TrustServerCertificate=True");
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
